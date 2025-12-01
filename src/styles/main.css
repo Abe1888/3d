@@ -108,18 +108,39 @@ body::-webkit-scrollbar {
 }
 
 .intro-content {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  padding: 3rem 2rem;
 }
 
-.intro-content > * + * {
-  margin-top: 2rem;
+.intro-header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
 }
 
 .intro-logo {
-  height: 8rem;
-  margin-left: auto;
-  margin-right: auto;
+  height: 6rem;
   filter: drop-shadow(0 4px 12px rgba(190, 32, 46, 0.15));
+}
+
+.intro-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
+.intro-footer {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  width: 100%;
 }
 
 .intro-subtitle {
@@ -161,29 +182,26 @@ body::-webkit-scrollbar {
 
 .intro-enter-button {
   margin-top: 2rem;
-  padding: 14px 40px;
-  background: #be202e;
-  color: #ffffff;
+  padding: 0;
+  width: 360px;
+  height: 90px;
+  background: url('/optimized/loading-start-button.webp') center/contain no-repeat;
+  color: transparent;
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  box-shadow: 0 4px 16px rgba(190, 32, 46, 0.25);
+  text-indent: -9999px;
+  overflow: hidden;
 }
 
 .intro-enter-button:hover {
-  background: #d12a3a;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(190, 32, 46, 0.35);
+  filter: brightness(1.1);
 }
 
 .intro-enter-button:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(190, 32, 46, 0.3);
+  filter: brightness(0.95);
 }
 
 /* ============================================

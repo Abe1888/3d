@@ -12,6 +12,9 @@ import { HUDProgress } from './components/HUDProgress';
 import objectTransforms from './config/objectTransforms.json';
 import { waitForDocumentReady } from './utils/domHelpers';
 import { createSceneInitializer } from './utils/SceneInitializer';
+import { DiagnosticOverlay, useDebugMode, useFPS, type AssetMetric } from './components/DiagnosticOverlay';
+import { createTransformValidator, type TransformSnapshot } from './utils/TransformValidator';
+import { ThreeJSErrorBoundary } from './components/ThreeJSErrorBoundary';
 
 // --- AUDIO SYSTEM EXTRACTED ---
 // AudioSystem class moved to: src/audio/AudioSystem.ts
@@ -40,6 +43,13 @@ export default function App() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [displayProgress, setDisplayProgress] = useState(0);
   const [sceneReady, setSceneReady] = useState(false);
+  
+  // Diagnostic overlay state
+  const debugMode = useDebugMode();
+  const fps = useFPS();
+  const [diagnosticTransforms, setDiagnosticTransforms] = useState<TransformSnapshot[]>([]);
+  const [diagnosticAssets, setDiagnosticAssets] = useState<AssetMetric[]>([]);
+  const cameraRef = useRef<THREE.Camera | null>(null);
   
   // Extended intro animation refs
   const extendedModeRef = useRef(false);
@@ -232,6 +242,9 @@ export default function App() {
     // Camera (controlled by scroll) - Reduced FOV for more natural perspective
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 2000); // Reduced from 55 to 45
     camera.position.set(0, 3, -20); // Starting position
+    
+    // Store camera reference for diagnostic overlay
+    cameraRef.current = camera;
     
     // Renderer with shadow support
     renderer = new THREE.WebGLRenderer({ 
@@ -809,35 +822,57 @@ export default function App() {
           className={`intro-screen ${introFadingOut ? 'fading-out' : 'visible'}`}
         >
           <div className="intro-content">
-            <img src="/optimized/logo.webp" alt="Translink" className="intro-logo" />
-            <p className="intro-subtitle">FLEET TELEMATICS</p>
-            {loadingProgress === 100 ? (
-              <button
-                onClick={dismissIntroScreen}
-                className="intro-enter-button"
-              >
-                ENTER EXPERIENCE
-              </button>
-            ) : (
-              <div className="loading-indicator">
-                <div className="loading-spinner" />
-                <p className="loading-text">Loading 3D Experience...</p>
-              </div>
-            )}
+            {/* Header - Logo */}
+            <div className="intro-header">
+              <img src="/optimized/logo.webp" alt="Translink" className="intro-logo" />
+            </div>
+            
+            {/* Center - Button */}
+            <div className="intro-center">
+              {loadingProgress === 100 ? (
+                <button
+                  onClick={dismissIntroScreen}
+                  className="intro-enter-button"
+                >
+                  ENTER EXPERIENCE
+                </button>
+              ) : (
+                <div className="loading-indicator">
+                  <div className="loading-spinner" />
+                  <p className="loading-text">Loading 3D Experience...</p>
+                </div>
+              )}
+            </div>
+            
+            {/* Footer - Fleet Telematics Text */}
+            <div className="intro-footer">
+              <p className="intro-subtitle">FLEET TELEMATICS</p>
+            </div>
           </div>
         </div>
       )}
 
-      <div ref={mountRef} className="canvas-container" />
+      {/* Wrap 3D scene in error boundary */}
+      <ThreeJSErrorBoundary
+        onError={(error, errorInfo) => {
+          console.error('3D Scene Error:', error, errorInfo);
+        }}
+        onReset={() => {
+          console.log('Resetting 3D scene...');
+          // Scene will reinitialize on component remount
+        }}
+      >
+        <div ref={mountRef} className="canvas-container" />
 
-      {/* HUD Progress Indicator */}
-      {!showIntroScreen && (
-        <HUDProgress 
-          scrollProgress={displayProgress}
-          activePhase={activePhase}
-          sectionName={getSectionName(scrollProgress, activePhase)}
-        />
-      )}
+        {/* HUD Progress Indicator */}
+        {!showIntroScreen && (
+          <HUDProgress 
+            scrollProgress={displayProgress}
+            activePhase={activePhase}
+            sectionName={getSectionName(scrollProgress, activePhase)}
+          />
+        )}
+      </ThreeJSErrorBoundary>
 
       {/* Top Bar - Logo Only */}
       <div className="top-bar">
@@ -1252,6 +1287,15 @@ export default function App() {
           }}
         />
       )}
+
+      {/* Diagnostic Overlay - Enable with ?debug=true */}
+      <DiagnosticOverlay
+        enabled={debugMode}
+        fps={fps}
+        transforms={diagnosticTransforms}
+        assetMetrics={diagnosticAssets}
+        camera={cameraRef.current || undefined}
+      />
 
     </div>
   );
