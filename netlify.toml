@@ -1,11 +1,13 @@
 # Netlify Configuration for Translink Solutions - 3D Truck Simulation
 
 [build]
+  base = "."
   command = "npm run build"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "18"
+  NODE_ENV = "production"
 
 # SPA redirect - serve index.html for all routes
 [[redirects]]
