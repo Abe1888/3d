@@ -109,14 +109,31 @@ async function main() {
   }
   
   // Find all GLB files in input directory
-  const inputFile = join(CONFIG.inputDir, 'Main_truck_updated_compressed.glb');
+  const inputFile = join(CONFIG.inputDir, 'Main_truck_updated.glb');
+  const outputFile = join(CONFIG.outputDir, 'Main_truck_updated_compressed.glb');
+  
+  // Check if compressed file already exists
+  if (existsSync(outputFile)) {
+    console.log('✅ Compressed file already exists:', basename(outputFile));
+    console.log('   Skipping compression (file already optimized)');
+    console.log('\n✨ Compression check complete!');
+    return;
+  }
   
   if (!existsSync(inputFile)) {
     console.error('❌ Input file not found:', inputFile);
+    console.log('   Expected source file: Main_truck_updated.glb');
+    console.log('   If compressed file already exists, this is OK.');
+    
+    // Check if compressed version exists
+    if (existsSync(outputFile)) {
+      console.log('✅ Compressed file exists, skipping compression');
+      return;
+    }
+    
     process.exit(1);
   }
   
-  const outputFile = join(CONFIG.outputDir, 'Main_truck_updated_compressed.glb');
   
   try {
     const result = await compressGLB(inputFile, outputFile);
